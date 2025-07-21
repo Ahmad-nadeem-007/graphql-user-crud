@@ -1,9 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class UserService {
@@ -21,8 +27,18 @@ export class UserService {
     return this.userRepository.find();
   }
 
-  findOne(id: number): Promise<User | null> {
-    return this.userRepository.findOneBy({ id });
+  async findOne(id: number): Promise<User> {
+    try {
+      const singleUser = await this.userRepository.findOneBy({ id });
+      if (!singleUser) {
+        throw new NotFoundException(`User with id ${id} not found`);
+      }
+      return singleUser;
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+      console.log(error);
+      throw new InternalServerErrorException();
+    }
   }
 
   async update(updateUserInput: UpdateUserInput): Promise<User | null> {

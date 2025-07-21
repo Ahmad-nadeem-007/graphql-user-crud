@@ -3,12 +3,14 @@ import { UserService } from './user.service';
 import { User } from './user.entity';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
+import { UsePipes, ValidationPipe } from '@nestjs/common';
 
 @Resolver(() => User)
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
   @Mutation(() => User)
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
   createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
     return this.userService.create(createUserInput);
   }
@@ -24,6 +26,7 @@ export class UserResolver {
   }
 
   @Mutation(() => User)
+  
   updateUser(@Args('updateUserInput') updateUserInput: UpdateUserInput) {
     return this.userService.update(updateUserInput);
   }
